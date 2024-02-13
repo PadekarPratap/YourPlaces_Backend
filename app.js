@@ -1,14 +1,15 @@
 import express from "express";
-import bodyParser from "body-parser";
+import "dotenv/config.js";
 
 import placesRouter from "./routes/places-routes.js";
 import usersRouter from "./routes/users-routes.js";
 import HttpError from "./models/http-error.js";
+import mongoose from "mongoose";
 
 const app = express();
 
 // to parse req.body
-app.use(bodyParser.json());
+app.use(express.json());
 
 // places routes
 app.use("/api/places", placesRouter);
@@ -35,5 +36,12 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknow error occured." });
 });
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// connecting to DB and starting server
+mongoose
+  .connect(process.env.CONNECT_URI)
+  .then(() =>
+    app.listen(process.env.PORT, () =>
+      console.log(`Server started on port ${process.env.PORT}`)
+    )
+  )
+  .catch((err) => console.log(err.message));

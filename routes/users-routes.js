@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createUser,
+  deleteUser,
   getAllUsers,
   loginUser,
 } from "../controllers/users-controllers.js";
@@ -23,5 +24,7 @@ router.post(
 );
 
 router.post("/login", loginUser);
+
+router.delete("/:uid", deleteUser);
 
 export default router;
