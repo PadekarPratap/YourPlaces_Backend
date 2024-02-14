@@ -1,5 +1,6 @@
 import express from "express";
 import "dotenv/config.js";
+import cors from "cors";
 
 import placesRouter from "./routes/places-routes.js";
 import usersRouter from "./routes/users-routes.js";
@@ -7,6 +8,9 @@ import HttpError from "./models/http-error.js";
 import mongoose from "mongoose";
 
 const app = express();
+
+// to handle CORS errors
+app.use(cors());
 
 // to parse req.body
 app.use(express.json());
