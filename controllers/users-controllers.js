@@ -4,6 +4,8 @@ import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
 import Place from "../models/Place.js";
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const getAllUsers = asyncHandler(async (req, res, next) => {
   const users = await User.find({}, "-password");
@@ -22,19 +24,30 @@ export const createUser = asyncHandler(async (req, res, next) => {
   if (existingUser)
     return next(new HttpError("User already exists. Try logging in", 422));
 
+  const hashedPassword = await bcrypt.hash(password, 12);
+
   const createdUser = new User({
     name: username,
     email,
-    password,
+    password: hashedPassword,
     places: [],
     image: req.file.path,
   });
 
   const result = await createdUser.save();
 
+  // create a jwt token
+  let token = jwt.sign(
+    { userId: result._id, email: result.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+
   return res.status(201).json({
     message: "User sign up successfully",
-    user: result,
+    userId: result._id,
+    email: result.email,
+    token,
   });
 });
 
@@ -43,13 +56,27 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 
   const existingUser = await User.findOne({ email });
 
-  if (!existingUser || existingUser.password !== password)
-    return next(
-      new HttpError("Invalid Creds! Password or email is incorrect", 422)
-    );
+  if (!existingUser)
+    return next(new HttpError("Invalid Creds! Check email or password", 422));
+
+  const isValidPassword = await bcrypt.compare(password, existingUser.password);
+
+  if (!isValidPassword) {
+    return next(new HttpError("Invalid Creds! Check email or password", 422));
+  }
+
+  // create a jwt token
+  let token = jwt.sign(
+    { userId: existingUser._id, email: existingUser.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
 
   return res.json({
     message: "Login successfull",
+    userId: existingUser._id,
+    email: existingUser.email,
+    token,
   });
 });
 

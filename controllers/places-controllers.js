@@ -82,7 +82,17 @@ export const updatePlace = asyncHandler(async (req, res, next) => {
   const { pid } = req.params;
   const { title, description } = req.body;
 
-  const place = await Place.findByIdAndUpdate(
+  // Adding authorization
+  // make sure that user who created the place can only update the place
+  let place = await Place.findById(pid);
+  if (!place) return next(new HttpError("Place does not exist", 404));
+  if (place.creator.toString() !== req.user.userId) {
+    return next(
+      new HttpError("You do not have the permission to update the place", 400)
+    );
+  }
+
+  place = await Place.findByIdAndUpdate(
     pid,
     { title, description },
     { new: true }
@@ -110,9 +120,19 @@ export const deletePlace = asyncHandler(async (req, res, next) => {
   });
   */
 
+  // Adding authorization
+  // make sure that user who created the place can only delete the place
+  let place = await Place.findById(pid);
+  if (!place) return next(new HttpError("Place does not exist", 404));
+  if (place.creator.toString() !== req.user.userId) {
+    return next(
+      new HttpError("You do not have the permission to delete the place", 400)
+    );
+  }
+
   const sess = await mongoose.startSession();
   sess.startTransaction();
-  const place = await Place.findByIdAndDelete(pid, { session: sess }).populate(
+  place = await Place.findByIdAndDelete(pid, { session: sess }).populate(
     "creator"
   );
   await place.creator.places.pull(place);

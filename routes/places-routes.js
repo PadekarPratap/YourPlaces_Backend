@@ -8,6 +8,7 @@ import {
   updatePlace,
 } from "../controllers/places-controllers.js";
 import { fileUpload } from "../middlewares/image-upload.js";
+import { checkAuth } from "../middlewares/check-auth.js";
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.get("/user/:uid", getPlacesByUserId);
 
 router.post(
   "/",
+  checkAuth,
   fileUpload.single("image"),
   [
     check("title", "Title cannot be empty").not().isEmpty(),
@@ -30,6 +32,7 @@ router.post(
 
 router.patch(
   "/:pid",
+  checkAuth,
   [
     check("title", "Title cannot be empty").not().isEmpty(),
     check("description", "Description must be atleast 5 chars.").isLength({
@@ -39,6 +42,6 @@ router.patch(
   updatePlace
 );
 
-router.delete("/:pid", deletePlace);
+router.delete("/:pid", checkAuth, deletePlace);
 
 export default router;
