@@ -27,9 +27,7 @@ export const createUser = asyncHandler(async (req, res, next) => {
     email,
     password,
     places: [],
-    // dummy
-    image:
-      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Ffree-photos-vectors%2Fprofile-avatar&psig=AOvVaw3arn5F1YbMlEiOsqTBibUs&ust=1707918037434000&source=images&cd=vfe&opi=89978449&ved=0CBMQjRxqFwoTCOjgh9G4qIQDFQAAAAAdAAAAABAE",
+    image: req.file.path,
   });
 
   const result = await createdUser.save();

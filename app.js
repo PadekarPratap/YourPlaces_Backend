@@ -1,3 +1,5 @@
+import fs from "fs";
+
 import express from "express";
 import "dotenv/config.js";
 import cors from "cors";
@@ -9,11 +11,14 @@ import mongoose from "mongoose";
 
 const app = express();
 
+// to parse req.body
+app.use(express.json());
+
 // to handle CORS errors
 app.use(cors());
 
-// to parse req.body
-app.use(express.json());
+// to server static images
+app.use("/uploads/images", express.static("uploads/images"));
 
 // places routes
 app.use("/api/places", placesRouter);
@@ -32,6 +37,10 @@ app.use((req, res, next) => {
 
 // error handling middleware
 app.use((error, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.file.path, (err) => console.log(err));
+  }
+
   if (res.headerSent) {
     return next(error);
   }

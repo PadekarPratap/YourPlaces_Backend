@@ -1,3 +1,4 @@
+import fs from "fs";
 import { validationResult } from "express-validator";
 import HttpError from "../models/http-error.js";
 import asyncHandler from "express-async-handler";
@@ -25,13 +26,7 @@ export const getPlacesByUserId = asyncHandler(async (req, res, next) => {
 
   const places = await Place.find({ creator: uid });
 
-  if (!places || places.length === 0)
-    return next(
-      new HttpError(
-        "No places created by the user or user does not exist.",
-        404
-      )
-    );
+  if (!places) return next(new HttpError("No places created by the user", 404));
 
   return res.json({
     message: "Places fetched successfully",
@@ -65,9 +60,7 @@ export const createPlace = asyncHandler(async (req, res, next) => {
     address,
     creator,
     location,
-    // dummy image
-    image:
-      "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.concordehotelnewyork.com%2Fempire-state-building&psig=AOvVaw1g8LYYOY-J1pJr8Rcnl-mm&ust=1707908927165000&source=images&cd=vfe&opi=89978449&ved=0CBMQjRxqFwoTCOCm19mWqIQDFQAAAAAdAAAAABAE",
+    image: req.file.path,
   });
 
   const session = await mongoose.startSession();
@@ -125,6 +118,9 @@ export const deletePlace = asyncHandler(async (req, res, next) => {
   await place.creator.places.pull(place);
   await place.creator.save({ session: sess });
   await sess.commitTransaction();
+
+  // delete the image
+  fs.unlink(place.image, (err) => console.log(err));
 
   return res.json({
     message: "Place deleted successfully!",
