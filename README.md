@@ -4,7 +4,7 @@
 
 <h2>🚀 Demo</h2>
 
-<!-- [Google.com](Google.com) -->
+[https://pdp-yourplaces.netlify.app/](https://pdp-yourplaces.netlify.app/)
 
 <h2>🧐 Features</h2>
 
