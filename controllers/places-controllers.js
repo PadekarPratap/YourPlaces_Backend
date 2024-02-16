@@ -38,7 +38,7 @@ export const createPlace = asyncHandler(async (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) return res.status(422).json({ Error: error.array() });
 
-  const { title, description, address, creator } = req.body;
+  const { title, description, address } = req.body;
 
   // get the co-ordinates of the address
   let location;
@@ -51,14 +51,14 @@ export const createPlace = asyncHandler(async (req, res, next) => {
   }
 
   // wether the user/creator exist or not
-  const userExist = await User.findById(creator);
+  const userExist = await User.findById(req.user.userId);
   if (!userExist) return next(new HttpError("Could not find the user.", 404));
 
   const createdPlace = new Place({
     title,
     description,
     address,
-    creator,
+    creator: req.user.userId,
     location,
     image: req.file.path,
   });
